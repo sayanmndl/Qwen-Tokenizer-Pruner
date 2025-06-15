@@ -1,8 +1,8 @@
 #!/bin/sh
 
-old_model_path="../../checkpoints/Qwen-7B-Chat/"
-new_model_path="../../checkpoints/Qwen-7B-Chat-new-vocab/"
-support_data="../../VLMEvalKit/raw_data/"
+old_model_path="../../assets/models/qwen3_0_6b/"
+new_model_path="../../assets/models/qwen3_0_6b-new-vocab/"
+support_data="../../assets/dataset/exposatory_prose/parquets/data"
 support_lang="" # optional   e.g., support_lang="zh-cn en"
 inherit_vocab_count="" # optional
 

@@ -1,6 +1,7 @@
 import os
 from tqdm import tqdm
 import json
+import pandas as pd
 import torch
 from utils import make_context
 from langdetect import detect as langdetect
@@ -10,17 +11,38 @@ DetectorFactory.seed = 0 # no random
 def get_text_list(folder_path):
     query_list = []
     prompt_list = []
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith('json'):
-            file = json.load(open(os.path.join(folder_path, file_name)))
-            if 'query' in file:
-                query_list.append(file['query'])
-            if 'response' in file:
-                prompt_list.append(file['response'])
-            if 'prompt' in file:
-                prompt_list.append(file['prompt'])
-    return query_list, prompt_list
 
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        print(file_path)
+        _, ext = os.path.splitext(file_name.lower())
+
+        # Load the file into a list of dicts
+        if ext == '.json':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        elif ext == '.parquet':
+            df = pd.read_parquet(file_path)
+            data = df.to_dict(orient='records')
+        else:
+            continue  # skip files we don’t care about
+
+        # Ensure uniform iterable
+        if isinstance(data, dict):
+            data = [data]
+
+        # Extract fields
+        for record in data:
+            if 'query' in record:
+                query_list.append(record['query'])
+            if 'response' in record:
+                prompt_list.append(record['response'])
+            if 'prompt' in record:
+                prompt_list.append(record['prompt'])
+            if 'text' in record:
+                prompt_list.append(record['text'])
+
+    return query_list, prompt_list
 
 def count_freq(data_path, vocab_size, tokenizer, output_path, inherit_vocab_count):
     vocab_counts = [0 for _ in range(vocab_size)]
